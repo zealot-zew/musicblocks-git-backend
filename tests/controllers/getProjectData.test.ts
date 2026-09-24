@@ -25,11 +25,7 @@ describe('handleGetProjectData', () => {
       json: mockJson,
     } as Partial<Response>;
 
-    mockGetProjectData.mockResolvedValue({
-      notes: ['C', 'D', 'E'],
-      tempo: 120,
-      key: 'C major'
-    });
+    mockGetProjectData.mockResolvedValue('dGVzdC1wcm9qZWN0LWRhdGE=');
   });
 
   describe('successful project data retrieval', () => {
@@ -45,11 +41,7 @@ describe('handleGetProjectData', () => {
       expect(mockGetProjectData).toHaveBeenCalledWith('my-music-project');
       expect(mockStatus).toHaveBeenCalledWith(200);
       expect(mockJson).toHaveBeenCalledWith({
-        content: {
-          notes: ['C', 'D', 'E'],
-          tempo: 120,
-          key: 'C major'
-        }
+        content: 'dGVzdC1wcm9qZWN0LWRhdGE='
       });
     });
 
@@ -90,7 +82,7 @@ describe('handleGetProjectData', () => {
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(400);
-      expect(mockJson).toHaveBeenCalledWith({ message: 'No response' });
+      expect(mockJson).toHaveBeenCalledWith({ message: 'repoName query parameter is required' });
       expect(mockGetProjectData).not.toHaveBeenCalled();
     });
 
@@ -104,7 +96,7 @@ describe('handleGetProjectData', () => {
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(400);
-      expect(mockJson).toHaveBeenCalledWith({ message: 'No response' });
+      expect(mockJson).toHaveBeenCalledWith({ message: 'repoName query parameter is required' });
       expect(mockGetProjectData).not.toHaveBeenCalled();
     });
 
@@ -116,7 +108,7 @@ describe('handleGetProjectData', () => {
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(400);
-      expect(mockJson).toHaveBeenCalledWith({ message: 'No response' });
+      expect(mockJson).toHaveBeenCalledWith({ message: 'repoName query parameter is required' });
       expect(mockGetProjectData).not.toHaveBeenCalled();
     });
 
@@ -130,7 +122,7 @@ describe('handleGetProjectData', () => {
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(400);
-      expect(mockJson).toHaveBeenCalledWith({ message: 'No response' });
+      expect(mockJson).toHaveBeenCalledWith({ message: 'repoName query parameter is required' });
       expect(mockGetProjectData).not.toHaveBeenCalled();
     });
 
@@ -144,7 +136,7 @@ describe('handleGetProjectData', () => {
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(400);
-      expect(mockJson).toHaveBeenCalledWith({ message: 'No response' });
+      expect(mockJson).toHaveBeenCalledWith({ message: 'repoName query parameter is required' });
       expect(mockGetProjectData).not.toHaveBeenCalled();
     });
 
@@ -158,7 +150,7 @@ describe('handleGetProjectData', () => {
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(400);
-      expect(mockJson).toHaveBeenCalledWith({ message: 'No response' });
+      expect(mockJson).toHaveBeenCalledWith({ message: 'repoName query parameter is required' });
       expect(mockGetProjectData).not.toHaveBeenCalled();
     });
 
@@ -172,7 +164,7 @@ describe('handleGetProjectData', () => {
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(400);
-      expect(mockJson).toHaveBeenCalledWith({ message: 'No response' });
+      expect(mockJson).toHaveBeenCalledWith({ message: 'repoName query parameter is required' });
       expect(mockGetProjectData).not.toHaveBeenCalled();
     });
 
@@ -205,7 +197,7 @@ describe('handleGetProjectData', () => {
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(500);
-      expect(mockJson).toHaveBeenCalledWith({ error: error });
+      expect(mockJson).toHaveBeenCalledWith({ error: 'Failed to fetch project data' });
     });
 
     it('should handle different types of errors', async () => {
@@ -221,7 +213,7 @@ describe('handleGetProjectData', () => {
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(500);
-      expect(mockJson).toHaveBeenCalledWith({ error: networkError });
+      expect(mockJson).toHaveBeenCalledWith({ error: 'Failed to fetch project data' });
     });
 
     it('should handle non-Error objects', async () => {
@@ -237,7 +229,7 @@ describe('handleGetProjectData', () => {
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(500);
-      expect(mockJson).toHaveBeenCalledWith({ error: stringError });
+      expect(mockJson).toHaveBeenCalledWith({ error: 'Failed to fetch project data' });
     });
   });
 
@@ -249,13 +241,13 @@ describe('handleGetProjectData', () => {
         }
       };
 
-      mockGetProjectData.mockResolvedValue({});
+      mockGetProjectData.mockResolvedValue('');
 
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);
 
       expect(mockGetProjectData).toHaveBeenCalledWith('empty-repo');
       expect(mockStatus).toHaveBeenCalledWith(200);
-      expect(mockJson).toHaveBeenCalledWith({ content: {} });
+      expect(mockJson).toHaveBeenCalledWith({ content: '' });
     });
 
     it('should handle simple project data', async () => {
@@ -265,7 +257,7 @@ describe('handleGetProjectData', () => {
         }
       };
 
-      const simpleData = { notes: ['C'] };
+      const simpleData = 'dGVzdA==';
       mockGetProjectData.mockResolvedValue(simpleData);
 
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);
@@ -282,21 +274,7 @@ describe('handleGetProjectData', () => {
         }
       };
 
-      const complexData = {
-        tracks: [
-          { name: 'Piano', notes: ['C4', 'D4', 'E4'], velocity: 0.8 },
-          { name: 'Bass', notes: ['C2', 'G2'], velocity: 0.6 }
-        ],
-        settings: {
-          tempo: 120,
-          key: 'C major',
-          timeSignature: '4/4'
-        },
-        metadata: {
-          composer: 'Test Composer',
-          year: 2024
-        }
-      };
+      const complexData = 'W1swLFsic3RhcnQiLHt9XV0sWzEsW11dXQ==';
 
       mockGetProjectData.mockResolvedValue(complexData);
 
@@ -331,7 +309,7 @@ describe('handleGetProjectData', () => {
         }
       };
 
-      const numericData = 42;
+      const numericData = 'NDI=';
       mockGetProjectData.mockResolvedValue(numericData);
 
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);
@@ -348,7 +326,7 @@ describe('handleGetProjectData', () => {
         }
       };
 
-      const arrayData = ['item1', 'item2', 'item3'];
+      const arrayData = 'aXRlbTEsaXRlbTIsaXRlbTM=';
       mockGetProjectData.mockResolvedValue(arrayData);
 
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);
@@ -395,13 +373,7 @@ describe('handleGetProjectData', () => {
         }
       };
 
-      const largeData = {
-        notes: Array.from({ length: 1000 }, (_, i) => `note-${i}`),
-        metadata: {
-          description: 'a'.repeat(10000)
-        }
-      };
-
+      const largeData = 'a'.repeat(10000);
       mockGetProjectData.mockResolvedValue(largeData);
 
       await handleGetProjectData(mockRequest as Request, mockResponse as Response);

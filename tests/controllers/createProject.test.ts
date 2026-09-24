@@ -34,9 +34,14 @@ describe('handleCreateProject', () => {
 
     mockGenerateKey.mockReturnValue('test-key-123')
     mockHashKey.mockReturnValue('hashed-key-456');
-    mockCreateMetaData.mockImplementation((hash: string, theme: string) => ({
+    mockCreateMetaData.mockImplementation((hash: string, theme: string, projectName?: string, creatorName?: string) => ({
+      projectName: projectName || '',
       createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
       theme: theme,
+      originalCreator: creatorName || 'anonymous',
+      isMigrated: false,
+      isMusicBlocks: true,
       hashedKey: hash
     }));
     mockCreateRepo.mockResolvedValue('https://github.com/org/test-repo');
@@ -60,17 +65,23 @@ describe('handleCreateProject', () => {
         'my-music-project',
         { notes: ['C', 'D', 'E'] },
         {
+          projectName: 'my-music-project',
           createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z',
           theme: 'piano',
+          originalCreator: 'anonymous',
+          isMigrated: false,
+          isMusicBlocks: true,
           hashedKey: 'hashed-key-456'
         },
         'A piano music project',
-        'piano'
+        'piano',
+        undefined
       );
 
       expect(mockGenerateKey).toHaveBeenCalled();
       expect(mockHashKey).toHaveBeenCalledWith('test-key-123');
-      expect(mockCreateMetaData).toHaveBeenCalledWith('hashed-key-456', 'piano');
+      expect(mockCreateMetaData).toHaveBeenCalledWith('hashed-key-456', 'piano', 'my-music-project', '');
       expect(mockGetRepoName).toHaveBeenCalledWith('https://github.com/org/test-repo');
       expect(mockJson).toHaveBeenCalledWith({
         success: true,
@@ -96,7 +107,8 @@ describe('handleCreateProject', () => {
         { instruments: ['piano', 'guitar'] },
         expect.any(Object),
         'Multi-instrument project',
-        'piano,guitar,drums'
+        'piano,guitar,drums',
+        undefined
       );
     });
 
@@ -113,11 +125,12 @@ describe('handleCreateProject', () => {
       await handleCreateProject(mockRequest as Request, mockResponse as Response);
 
       expect(mockCreateRepo).toHaveBeenCalledWith(
-        'My_Music_Project',
+        'My-Music-Project',
         { genre: 'jazz' },
         expect.any(Object),
         'Jazz music project',
-        'jazz'
+        'jazz',
+        undefined
       );
     });
   });
@@ -133,11 +146,12 @@ describe('handleCreateProject', () => {
       await handleCreateProject(mockRequest as Request, mockResponse as Response);
 
       expect(mockCreateRepo).toHaveBeenCalledWith(
-        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/),
+        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/),
         { notes: ['A', 'B', 'C'] },
         expect.any(Object),
-        'Musicblocks project',
-        'default'
+        'Music Blocks project',
+        'default',
+        undefined
       );
     });
 
@@ -156,8 +170,9 @@ describe('handleCreateProject', () => {
         'test-project',
         { genre: 'rock' },
         expect.any(Object),
-        'Musicblocks project',
-        'rock'
+        'Music Blocks project',
+        'rock',
+        undefined
       );
     });
   });
@@ -174,7 +189,7 @@ describe('handleCreateProject', () => {
       await handleCreateProject(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(400);
-      expect(mockJson).toHaveBeenCalledWith({ message: 'No project data' });
+      expect(mockJson).toHaveBeenCalledWith({ message: 'projectData is required' });
     });
 
     it('should return 500 when createRepo throws an error', async () => {
@@ -193,7 +208,7 @@ describe('handleCreateProject', () => {
       await handleCreateProject(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(500);
-      expect(mockJson).toHaveBeenCalledWith({ error: 'Something went wrong.' });
+      expect(mockJson).toHaveBeenCalledWith({ error: 'Failed to create project' });
     });
 
     it('should handle createRepo errors gracefully', async () => {
@@ -213,9 +228,9 @@ describe('handleCreateProject', () => {
 
       await handleCreateProject(mockRequest as Request, mockResponse as Response);
 
-      expect(consoleSpy).toHaveBeenCalledWith(error);
+      expect(consoleSpy).toHaveBeenCalledWith('[handleCreateProject]', error);
       expect(mockStatus).toHaveBeenCalledWith(500);
-      expect(mockJson).toHaveBeenCalledWith({ error: 'Something went wrong.' });
+      expect(mockJson).toHaveBeenCalledWith({ error: 'Failed to create project' });
 
       consoleSpy.mockRestore();
     });
@@ -234,11 +249,12 @@ describe('handleCreateProject', () => {
       await handleCreateProject(mockRequest as Request, mockResponse as Response);
 
       expect(mockCreateRepo).toHaveBeenCalledWith(
-        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/),
+        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/),
         { genre: 'electronic' },
         expect.any(Object),
-        'Musicblocks project',
-        'default'
+        'Music Blocks project',
+        'electronic',
+        undefined
       );
     });
 
@@ -254,11 +270,12 @@ describe('handleCreateProject', () => {
       await handleCreateProject(mockRequest as Request, mockResponse as Response);
 
       expect(mockCreateRepo).toHaveBeenCalledWith(
-        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/),
+        'test-project',
         { genre: 'pop' },
         expect.any(Object),
-        'Musicblocks project',
-        'default'
+        'Music Blocks project',
+        'default',
+        undefined
       );
     });
 
@@ -275,11 +292,12 @@ describe('handleCreateProject', () => {
       await handleCreateProject(mockRequest as Request, mockResponse as Response);
 
       expect(mockCreateRepo).toHaveBeenCalledWith(
-        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/),
+        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/),
         { genre: 'folk' },
         expect.any(Object),
-        'Musicblocks project',
-        'default'
+        'Music Blocks project',
+        'default',
+        undefined
       );
     });
   });
@@ -298,11 +316,12 @@ describe('handleCreateProject', () => {
       await handleCreateProject(mockRequest as Request, mockResponse as Response);
 
       expect(mockCreateRepo).toHaveBeenCalledWith(
-        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/),
+        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/),
         { genre: 'rock' },
         expect.any(Object),
-        'Musicblocks project',
-        'default'
+        'Music Blocks project',
+        'default',
+        undefined
       );
     });
 
@@ -318,11 +337,12 @@ describe('handleCreateProject', () => {
       await handleCreateProject(mockRequest as Request, mockResponse as Response);
 
       expect(mockCreateRepo).toHaveBeenCalledWith(
-        '___',
+        expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/),
         { genre: 'jazz' },
         expect.any(Object),
-        'Musicblocks project',
-        'jazz'
+        'Music Blocks project',
+        'jazz',
+        undefined
       );
     });
   });

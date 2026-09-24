@@ -126,8 +126,13 @@ describe('Hash Utilities', () => {
       const result = createMetaData('test-hash', 'piano');
 
       expect(result).toEqual({
+        projectName: '',
         createdAt: '2024-01-01T12:00:00.000Z',
+        updatedAt: '2024-01-01T12:00:00.000Z',
         theme: 'piano',
+        originalCreator: 'anonymous',
+        isMigrated: false,
+        isMusicBlocks: true,
         hashedKey: 'test-hash'
       });
 
@@ -156,8 +161,13 @@ describe('Hash Utilities', () => {
       const result = createMetaData('test-hash', '');
 
       expect(result).toEqual({
+        projectName: '',
         createdAt: '2024-01-01T12:00:00.000Z',
-        theme: '',
+        updatedAt: '2024-01-01T12:00:00.000Z',
+        theme: 'default',
+        originalCreator: 'anonymous',
+        isMigrated: false,
+        isMusicBlocks: true,
         hashedKey: 'test-hash'
       });
 
@@ -172,8 +182,13 @@ describe('Hash Utilities', () => {
       const result = createMetaData('test-hash', specialTheme);
 
       expect(result).toEqual({
+        projectName: '',
         createdAt: '2024-01-01T12:00:00.000Z',
+        updatedAt: '2024-01-01T12:00:00.000Z',
         theme: 'rock & roll!',
+        originalCreator: 'anonymous',
+        isMigrated: false,
+        isMusicBlocks: true,
         hashedKey: 'test-hash'
       });
 
@@ -183,7 +198,9 @@ describe('Hash Utilities', () => {
     it('should use current time when called multiple times', () => {
       const mockDate1 = new Date('2024-01-01T12:00:00.000Z');
       const mockDate2 = new Date('2024-01-01T12:01:00.000Z');
-      
+
+      // createMetaData calls `new Date()` once per invocation (shared for
+      // createdAt and updatedAt), so we need one mock per call.
       jest.spyOn(global, 'Date')
         .mockImplementationOnce(() => mockDate1 as never)
         .mockImplementationOnce(() => mockDate2 as never);
@@ -192,7 +209,9 @@ describe('Hash Utilities', () => {
       const result2 = createMetaData('hash2', 'theme2');
 
       expect(result1.createdAt).toBe('2024-01-01T12:00:00.000Z');
+      expect(result1.updatedAt).toBe('2024-01-01T12:00:00.000Z');
       expect(result2.createdAt).toBe('2024-01-01T12:01:00.000Z');
+      expect(result2.updatedAt).toBe('2024-01-01T12:01:00.000Z');
 
       jest.restoreAllMocks();
     });
@@ -218,8 +237,13 @@ describe('Hash Utilities', () => {
       expect(key).toBe('746573742d72616e646f6d2d62797465732d33322d63686172732d6c6f6e67');
       expect(hashedKey).toBe('hashed-key-result');
       expect(metadata).toEqual({
+        projectName: '',
         createdAt: '2024-01-01T12:00:00.000Z',
+        updatedAt: '2024-01-01T12:00:00.000Z',
         theme: 'jazz',
+        originalCreator: 'anonymous',
+        isMigrated: false,
+        isMusicBlocks: true,
         hashedKey: 'hashed-key-result'
       });
 
